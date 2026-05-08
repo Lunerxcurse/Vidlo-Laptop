@@ -370,6 +370,17 @@
   </style>
 </head>
 <body class="font-body-md text-body-md antialiased">
+<script>
+  // If the user hasn't seen the auth flow yet, send them to the standalone auth page.
+  try {
+    if (!localStorage.getItem('vidlo_seen')) {
+      location.href = '/auth.html';
+    }
+  } catch (e) {
+    // ignore storage/access errors
+    console.warn('Redirect check failed', e);
+  }
+</script>
 
 <!-- Desktop Sidebar -->
 <nav class="fixed left-0 top-0 h-full w-64 bg-[#0A0A0A] border-r border-white/5 backdrop-blur-xl bg-opacity-80 flex-col py-8 px-4 justify-between z-50">
@@ -1667,11 +1678,14 @@ function openSettingsPanelDesktop(){
       logoutBtn.addEventListener('click', function(){
         localStorage.removeItem('vidlo_user'); localStorage.removeItem('vidlo_seen');
         try { if(desktopSettingsPanelInstance) desktopSettingsPanelInstance.classList.add('hidden'); } catch(e){}
-        const modal = document.getElementById('auth-modal');
-        const signinPane = document.getElementById('auth-signin');
-        const signupPane = document.getElementById('auth-signup');
-        if(signinPane && signupPane){ signinPane.classList.remove('hidden'); signupPane.classList.add('hidden'); }
-        if(modal){ modal.style.zIndex = '80'; modal.classList.remove('hidden'); document.body.classList.add('auth-open'); document.body.style.overflow = 'hidden'; }
+        // Redirect to standalone auth page showing sign-in
+        try { location.href = '/auth.html#signin'; } catch(e) { /* fallback to modal */ 
+          const modal = document.getElementById('auth-modal');
+          const signinPane = document.getElementById('auth-signin');
+          const signupPane = document.getElementById('auth-signup');
+          if(signinPane && signupPane){ signinPane.classList.remove('hidden'); signupPane.classList.add('hidden'); }
+          if(modal){ modal.style.zIndex = '80'; modal.classList.remove('hidden'); document.body.classList.add('auth-open'); document.body.style.overflow = 'hidden'; }
+        }
       });
     }
     const deleteBtn = desktopSettingsPanelInstance.querySelector('#delete-account-btn');
@@ -1679,11 +1693,14 @@ function openSettingsPanelDesktop(){
       deleteBtn.addEventListener('click', function(){
         localStorage.removeItem('vidlo_user'); localStorage.removeItem('vidlo_seen');
         try { if(desktopSettingsPanelInstance) desktopSettingsPanelInstance.classList.add('hidden'); } catch(e){}
-        const modal = document.getElementById('auth-modal');
-        const signupPane = document.getElementById('auth-signup');
-        const signinPane = document.getElementById('auth-signin');
-        if(signupPane && signinPane){ signupPane.classList.remove('hidden'); signinPane.classList.add('hidden'); }
-        if(modal){ modal.classList.remove('hidden'); document.body.classList.add('auth-open'); document.body.style.overflow = 'hidden'; }
+        // Redirect to standalone auth page showing create-account (signup)
+        try { location.href = '/auth.html#signup'; } catch(e) {
+          const modal = document.getElementById('auth-modal');
+          const signupPane = document.getElementById('auth-signup');
+          const signinPane = document.getElementById('auth-signin');
+          if(signupPane && signinPane){ signupPane.classList.remove('hidden'); signinPane.classList.add('hidden'); }
+          if(modal){ modal.classList.remove('hidden'); document.body.classList.add('auth-open'); document.body.style.overflow = 'hidden'; }
+        }
       });
     }
   }catch(e){}
@@ -1966,7 +1983,8 @@ if(settingsCloseOverlay) settingsCloseOverlay.addEventListener('click', closeSet
     settingsLogout.addEventListener('click', function(){
       localStorage.removeItem('vidlo_user'); localStorage.removeItem(seenKey);
       try { if(desktopSettingsPanelInstance) desktopSettingsPanelInstance.classList.add('hidden'); } catch(e){}
-      showModal('signin');
+      // go to standalone sign-in page
+      try { location.href = '/auth.html#signin'; } catch(e) { showModal('signin'); }
     });
   }
 
@@ -1976,7 +1994,8 @@ if(settingsCloseOverlay) settingsCloseOverlay.addEventListener('click', closeSet
       localStorage.removeItem('vidlo_user'); localStorage.removeItem(seenKey);
       const sp = document.getElementById('settings-panel');
       if(sp) sp.classList.add('hidden');
-      showModal('signup');
+      // go to standalone create account page
+      try { location.href = '/auth.html#signup'; } catch(e) { showModal('signup'); }
     });
   }
 
